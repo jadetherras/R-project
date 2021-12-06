@@ -72,3 +72,22 @@ supprimed2 = nrow(filt_genotype) - nrow(final_genotype) # nombre de SNP retirés
 
 #PART 3
 
+#1
+
+model = lm(phenotypes.Cholesterol, covariates.gender)
+summary(model)
+
+#2
+Cholesterol_F = 
+Cholesterol_M =
+geom_boxplot()
+geom_density()
+
+
+#3
+#4
+#5
+#6
+#7
+#8
+

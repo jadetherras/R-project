@@ -36,7 +36,7 @@ for(i in  1:nrow(filt_genotype)){
 }
 
 supprimed = nrow(genotypes) - nrow(filt_genotype) # nombre de SNP retirés
-
+supprimed
 #3
 altered = function(x) {
   vect = c()
@@ -74,7 +74,7 @@ dev.off()
 final_genotype = filt_genotype[MAF >= 0.01,]
 
 supprimed2 = nrow(filt_genotype) - nrow(final_genotype) # nombre de SNP retirés
-#demander encore au prof s'il faut tester pour trouver le maf (ou si on peut juste partir du principe que c'est bon)
+supprimed2
 
 #PART 3
 
@@ -82,10 +82,9 @@ supprimed2 = nrow(filt_genotype) - nrow(final_genotype) # nombre de SNP retirés
 
 model = lm(phenotypes[,2] ~ covariates[,2])
 #ou utiliser phenotypes$Cholesterol et same pour covariates
-
+summary(model)
 R = summary(model)$r.squared
-
-#R^2 = -0.0002128, which indicates a high probability that the gender does impact the cholesterol level
+R
 
 #2
 
@@ -95,7 +94,7 @@ gen_chol$gender = as.factor(gen_chol$gender)
 head(gen_chol)
 
 gcboxplot = ggplot(gen_chol, aes(x=gender, y=Cholesterol)) + 
-  geom_boxplot()
+  geom_boxplot() + ggtitle("boxplot of cholesterol level for different genders")
 
 gcboxplot
 dev.off()
@@ -104,12 +103,9 @@ png(filename = "density_cholesterol.png")
 
 density_chol = gen_chol[,2:3]
 density_chol$gender = as.factor(density_chol$gender)
-density_plot = ggplot(density_chol, aes(x = Cholesterol, color = gender)) + geom_density()
+density_plot = ggplot(density_chol, aes(x = Cholesterol, color = gender)) + geom_density() + ggtitle("distribution of cholesterol level for different genders")
 density_plot
 dev.off()
-
-#As there is a shift in the densities between the two genders, we can conclude that the gender is a covariate of cholesterol
-
 
 #3
 data_for_pca = t(final_genotype[, 10:ncol(final_genotype)])
@@ -134,16 +130,13 @@ data_pca = prcomp(data_for_pca, center = T)
 
 data_plot = data.frame(data_pca$x)
 
+gender = as.factor(covariates$gender)
+
 png(filename = "PCA.png")
 p <- ggplot(data_plot, aes(x = PC1, y = PC2)) +
-  geom_point()
+  geom_point(aes(color=gender)) + ggtitle("PCA performed on genotype data")
 p
 dev.off()
-
-
-
-# We see 3 clusters. Each cluster represent one population cluster that have preferencialy specific SNP.
-#no cause 3 ethnicies, 3 clusters
 
 #4
 
@@ -166,6 +159,8 @@ for (i in 1:nrow(final_genotype)) {
 
 for_manhattan = data.frame("P" = p_val, "Chr" = final_genotype$`#CHROM`,"Position" = final_genotype$POS, "Chromosome_position" = position_manhattan)
 
+sig_data = for_manhattan[for_manhattan$P < 0.05/length(p_val),]
+
 Manhattan <- ggplot(for_manhattan, aes(x=Chromosome_position, y=-log10(P))) +
   
 # Show all points
@@ -180,7 +175,7 @@ theme(
   panel.border = element_blank(),
   panel.grid.major.x = element_blank(),
   panel.grid.minor.x = element_blank()
-)
+) + geom_point(data =sig_data, aes(x=Chromosome_position, y=-log10(P)), color="orange", size=2) # Add highlighted points
 
 png(filename = "Manhattan.png")
 Manhattan #BONUS plot colors
@@ -205,6 +200,8 @@ for (i in 1:nrow(final_genotype)) {
 
 for_manhattan2 = data.frame("P" = p_val2, "Chr" = final_genotype$`#CHROM`,"Position" = final_genotype$POS, "Chromosome_position" = position_manhattan2)
 
+sig_data2 = for_manhattan2[for_manhattan2$P < 0.05/length(p_val2),]
+
 Manhattan2 <- ggplot(for_manhattan2, aes(x=Chromosome_position, y=-log10(P))) +
   
   # Show all points
@@ -219,11 +216,29 @@ Manhattan2 <- ggplot(for_manhattan2, aes(x=Chromosome_position, y=-log10(P))) +
     panel.border = element_blank(),
     panel.grid.major.x = element_blank(),
     panel.grid.minor.x = element_blank()
-  )
+  ) + geom_point(data =sig_data2, aes(x=Chromosome_position, y=-log10(P)), color="orange", size=2) # Add highlighted points
+
 
 png(filename = "Manhattan with covariates.png")
 Manhattan2 #BONUS plot colors
 dev.off()
 
+#7 in the report 
 
+#8
+
+qqpoints_exp = ppoints(length(p_val2))
+qqpoints_exp = sort(-log10(qqpoints_exp))
+
+qqpoints_obs = sort(-log10(p_val2))
+
+qqpoints_all = data.frame("Exp" = qqpoints_exp, "Obs" = qqpoints_obs)
+
+
+png(filename = "Q-Q plot of GWAS p-values.png")
+qqplot <- ggplot(qqpoints_all, aes(x=Exp,y=Obs)) + geom_point() + geom_abline(colour = "red") + ggtitle("Q-Q plot of GWAS p-values (-log10(p)")
+
+qqplot
+
+dev.off()
 

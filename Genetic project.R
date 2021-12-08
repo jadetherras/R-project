@@ -151,22 +151,42 @@ for (i in  1:ncol(data_for_pca)) {
 #5 
 
 position_manhattan = c()
-pos = 0
+Xaxis = c()
+CHR = c()
+current_chr = 0
+relative_pos = 0
+pos_before = 0
 for (i in 1:nrow(final_genotype)) {
-  pos = pos + final_genotype[i,2]
-  position_manhattan = c(position_manhattan,pos)
-}
+  if (current_chr != final_genotype[i,1]) {
+    if(current_chr != 0) {
+      Xaxis = c(Xaxis, (relative_pos)/2 + pos_before)
+    }
+    pos_before = relative_pos + pos_before
+    relative_pos = final_genotype[i,2]
+    CHR = c(CHR,final_genotype[i,1])
+    current_chr = final_genotype[i,1]
+  } else {
+    relative_pos = final_genotype[i,2]-final_genotype[i-1,2] + relative_pos
+  }
+  position_manhattan = c(position_manhattan,final_genotype[i,2] +pos_before)
+  }
+Xaxis = c(Xaxis, (relative_pos)/2 + pos_before)
 
-for_manhattan = data.frame("P" = p_val, "Chr" = final_genotype$`#CHROM`,"Position" = final_genotype$POS, "Chromosome_position" = position_manhattan)
+
+for_manhattan = data.frame("P" = p_val, "ID" = final_genotype$ID, "Chr" = final_genotype$`#CHROM`,"Position" = final_genotype$POS, "Chromosome_position" = position_manhattan)
 
 sig_data = for_manhattan[for_manhattan$P < 0.05/length(p_val),]
 
-Manhattan <- ggplot(for_manhattan, aes(x=Chromosome_position, y=-log10(P))) +
-  
+Manhattan <- ggplot(for_manhattan, aes(x=Chromosome_position, y=-log10(P)))+ ggtitle("Manhattan plot without covariates") +
 # Show all points
 geom_point( aes(color=as.factor(Chr)), alpha=0.8, size=1.3) +
 scale_color_manual(values = rep(c("grey", "skyblue"), 22 )) + 
 geom_hline(yintercept = -log10(0.05/length(p_val))) +
+  
+  # custom X axis:
+  scale_x_continuous( label = CHR, breaks= Xaxis) +
+  scale_y_continuous(expand = c(0, 0) ) +     # remove space between plot area and x axis
+  
   
 #Custom the theme:
 theme_bw() +
@@ -177,8 +197,9 @@ theme(
   panel.grid.minor.x = element_blank()
 ) + geom_point(data =sig_data, aes(x=Chromosome_position, y=-log10(P)), color="orange", size=2) # Add highlighted points
 
+
 png(filename = "Manhattan.png")
-Manhattan #BONUS plot colors
+Manhattan 
 dev.off()
 
 #6 
@@ -191,23 +212,22 @@ for (i in  1:ncol(data_for_pca)) {
   p_val2 = c(p_val2,summary(model_vp2)$coefficients[2,4])
 }
 
-position_manhattan2 = c()
-pos2 = 0
-for (i in 1:nrow(final_genotype)) {
-  pos2 = pos2 + final_genotype[i,2]
-  position_manhattan2 = c(position_manhattan2,pos2)
-}
 
-for_manhattan2 = data.frame("P" = p_val2, "Chr" = final_genotype$`#CHROM`,"Position" = final_genotype$POS, "Chromosome_position" = position_manhattan2)
+for_manhattan2 = data.frame("P" = p_val2,"ID" = final_genotype$ID, "Chr" = final_genotype$`#CHROM`,"Position" = final_genotype$POS, "Chromosome_position" = position_manhattan)
 
 sig_data2 = for_manhattan2[for_manhattan2$P < 0.05/length(p_val2),]
 
-Manhattan2 <- ggplot(for_manhattan2, aes(x=Chromosome_position, y=-log10(P))) +
+Manhattan2 <- ggplot(for_manhattan2, aes(x=Chromosome_position, y=-log10(P)))+ ggtitle("Manhattan plot with covariates")  +
   
   # Show all points
   geom_point( aes(color=as.factor(Chr)), alpha=0.8, size=1.3) +
   scale_color_manual(values = rep(c("grey", "skyblue"), 22 )) + 
   geom_hline(yintercept = -log10(0.05/length(p_val2))) +
+  
+  # custom X axis:
+  scale_x_continuous( label = CHR, breaks= Xaxis) +
+  scale_y_continuous(expand = c(0, 0) ) +     # remove space between plot area and x axis
+  
   
   #Custom the theme:
   theme_bw() +
@@ -220,7 +240,7 @@ Manhattan2 <- ggplot(for_manhattan2, aes(x=Chromosome_position, y=-log10(P))) +
 
 
 png(filename = "Manhattan with covariates.png")
-Manhattan2 #BONUS plot colors
+Manhattan2 
 dev.off()
 
 #7 in the report 
@@ -236,7 +256,7 @@ qqpoints_all = data.frame("Exp" = qqpoints_exp, "Obs" = qqpoints_obs)
 
 
 png(filename = "Q-Q plot of GWAS p-values.png")
-qqplot <- ggplot(qqpoints_all, aes(x=Exp,y=Obs)) + geom_point() + geom_abline(colour = "red") + ggtitle("Q-Q plot of GWAS p-values (-log10(p)")
+qqplot <- ggplot(qqpoints_all, aes(x=Exp,y=Obs)) + geom_point() + geom_abline(colour = "red") + ggtitle("Q-Q plot of GWAS p-values (-log10(p))")
 
 qqplot
 

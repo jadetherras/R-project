@@ -1,39 +1,50 @@
 #PART 1
 
+#install useful packages (not useful if already installed)
 install.packages("data.table")
 install.packages("ggplot2")
 
 library(data.table)
 library("ggplot2")
 
+#replace by your path to the project
 setwd("/Users/Djay/Desktop/BA5/G&g/R-project")
 
 #PART 2
 
 #1
+
+#we decide to download the resources folder and at it at the project level
+#replace by your path to the resources
 covariates <- fread("resources/covariates.txt", sep=",", header=T, data.table = F, stringsAsFactors = F)
 phenotypes = fread("resources/phenotypes.txt", sep=",", header=T, data.table = F, stringsAsFactors = F)
-genotypes = fread("resources/genotypes.vcf", sep="\t", header=T,  data.table = F, stringsAsFactors = F, na.strings=getOption("datatable.na.strings","."))
+genotypes= fread("resources/genotypes.vcf", sep="\t", header=T,  data.table = F, stringsAsFactors = F, na.strings=getOption("datatable.na.strings","."))
 
 #2
+
+#compute callrate for all SNP
 callrate = c()
 for(i in  1:nrow(genotypes)){
   callrate = c(callrate, 1 - (sum(is.na(genotypes[i,10:ncol(genotypes)])))/(ncol(genotypes)-9))
 }
 
+#add in a dataframe
 df <- data.frame(callrate)
 
+#create the histogram
 png(filename = "callrate_histogram.png")
 histograme <- ggplot(df, aes(x=callrate)) + geom_histogram(bins = 30) + ggtitle("callrate histogram")
 histograme
 dev.off()
 
+#filtred the SNP in function of callrate
 filt_genotype = genotypes[rowSums(is.na(genotypes[,10:ncol(genotypes)])) == 0,]
 
 callratefiltred = c()
 for(i in  1:nrow(filt_genotype)){
   callratefiltred = c(callratefiltred, 1 - (sum(is.na(filt_genotype[i,10:ncol(filt_genotype)])))/(ncol(filt_genotype)-9))
 }
+callratefiltred
 
 supprimed = nrow(genotypes) - nrow(filt_genotype) # nombre de SNP retirés
 supprimed

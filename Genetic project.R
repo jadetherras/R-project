@@ -28,10 +28,10 @@ for(i in  1:nrow(genotypes)){
   callrate = c(callrate, 1 - (sum(is.na(genotypes[i,10:ncol(genotypes)])))/(ncol(genotypes)-9))
 }
 
-#add in a dataframe
+#create a dataframe with the callrates
 df <- data.frame(callrate)
 
-#create the histogram
+#create the histogram of callrates
 png(filename = "callrate_histogram.png")
 histograme <- ggplot(df, aes(x=callrate)) + geom_histogram(bins = 30) + ggtitle("callrate histogram")
 histograme
@@ -40,15 +40,20 @@ dev.off()
 #filtred the SNP in function of callrate
 filt_genotype = genotypes[rowSums(is.na(genotypes[,10:ncol(genotypes)])) == 0,]
 
-callratefiltred = c()
-for(i in  1:nrow(filt_genotype)){
-  callratefiltred = c(callratefiltred, 1 - (sum(is.na(filt_genotype[i,10:ncol(filt_genotype)])))/(ncol(filt_genotype)-9))
-}
-callratefiltred
+#only in order to test the callrate of the filtred genotype
+#callratefiltred = c()
+#for(i in  1:nrow(filt_genotype)){
+#  callratefiltred = c(callratefiltred, 1 - (sum(is.na(filt_genotype[i,10:ncol(filt_genotype)])))/(ncol(filt_genotype)-9))
+#}
+#callratefiltred
 
-supprimed = nrow(genotypes) - nrow(filt_genotype) # nombre de SNP retirés
-supprimed
+#compute the number of removed SNP
+supprimed = nrow(genotypes) - nrow(filt_genotype) 
+supprimed # removed SNP
+
 #3
+
+#function that compute the number of altered for each SNP
 altered = function(x) {
   vect = c()
   for(i in 1:ncol(x)) {
@@ -64,6 +69,7 @@ altered = function(x) {
   return(vect)
 }
 
+#compute the maf and create a dataframe (we can also trasform the data in 0,1 and 2 (number of altered) and do a sum)
 MAF = c()
 for(i in  1:nrow(filt_genotype)){
   AF = sum(altered(filt_genotype[i,10:ncol(filt_genotype)]))/((ncol(filt_genotype)-9)*2)
@@ -76,29 +82,35 @@ for(i in  1:nrow(filt_genotype)){
 
 df <- data.frame(MAF)
 
+#create the histogram of MAF
 png(filename = "MAF histogram.png")
 histograme_maf <- ggplot(df, aes(x=MAF)) + geom_histogram(bins = 30) + ggtitle("MAF histogram")
 histograme_maf
 dev.off()
 
-
+#filtred the SNP in function of MAF
 final_genotype = filt_genotype[MAF >= 0.01,]
 
-supprimed2 = nrow(filt_genotype) - nrow(final_genotype) # nombre de SNP retirés
-supprimed2
+#compute the number of removed SNP
+supprimed2 = nrow(filt_genotype) - nrow(final_genotype) 
+supprimed2 #removed SNP
 
 #PART 3
 
 #1
 
+#create the model and compute the summary
 model = lm(phenotypes[,2] ~ covariates[,2])
 #ou utiliser phenotypes$Cholesterol et same pour covariates
 summary(model)
+
+#compute R^2
 R = summary(model)$r.squared
 R
 
 #2
 
+#create the boxplot of cholesterol versus gender
 png(filename = "boxplot_cholesterol__gender.png")
 gen_chol = merge(phenotypes,covariates)
 gen_chol$gender = as.factor(gen_chol$gender)
@@ -110,6 +122,7 @@ gcboxplot = ggplot(gen_chol, aes(x=gender, y=Cholesterol)) +
 gcboxplot
 dev.off()
 
+#create the density of cholesterol in function of gender
 png(filename = "density_cholesterol.png")
 
 density_chol = gen_chol[,2:3]
@@ -119,6 +132,8 @@ density_plot
 dev.off()
 
 #3
+
+#transform data for PCA
 data_for_pca = t(final_genotype[, 10:ncol(final_genotype)])
 colnames(data_for_pca) = final_genotype$ID
 
@@ -143,6 +158,7 @@ data_plot = data.frame(data_pca$x)
 
 gender = as.factor(covariates$gender)
 
+#create the PCA plot with PC1 and PC2 (txo first component)
 png(filename = "PCA.png")
 p <- ggplot(data_plot, aes(x = PC1, y = PC2)) +
   geom_point(aes(color=gender)) + ggtitle("PCA performed on genotype data")
@@ -151,16 +167,20 @@ dev.off()
 
 #4
 
+#compute the p-value and beta coefficient for all SNP
 p_val = c()
 beta = c()
 for (i in  1:ncol(data_for_pca)) {
+  #compute the model
   model_vp = lm(phenotypes[,2] ~ data_for_pca[,i])
+  #extract beta and p-value from the summary
   beta = c(beta,summary(model_vp)$coefficients[2,1])
   p_val = c(p_val,summary(model_vp)$coefficients[2,4])
 }
 
 #5 
 
+#
 position_manhattan = c()
 Xaxis = c()
 CHR = c()
@@ -180,23 +200,25 @@ for (i in 1:nrow(final_genotype)) {
     relative_pos = final_genotype[i,2]-final_genotype[i-1,2] + relative_pos
   }
   position_manhattan = c(position_manhattan,final_genotype[i,2] +pos_before)
-  }
+}
 Xaxis = c(Xaxis, (relative_pos)/2 + pos_before)
 
-
+#create a dataframe with all data for the manhattan plot
 for_manhattan = data.frame("P" = p_val, "ID" = final_genotype$ID, "Chr" = final_genotype$`#CHROM`,"Position" = final_genotype$POS, "Chromosome_position" = position_manhattan)
 
+#detect all significant SNP
 sig_data = for_manhattan[for_manhattan$P < 0.05/length(p_val),]
 
+#create the manhattan plot
 Manhattan <- ggplot(for_manhattan, aes(x=Chromosome_position, y=-log10(P)))+ ggtitle("Manhattan plot without covariates") +
 # Show all points
 geom_point( aes(color=as.factor(Chr)), alpha=0.8, size=1.3) +
 scale_color_manual(values = rep(c("grey", "skyblue"), 22 )) + 
 geom_hline(yintercept = -log10(0.05/length(p_val))) +
   
-  # custom X axis:
-  scale_x_continuous( label = CHR, breaks= Xaxis) +
-  scale_y_continuous(expand = c(0, 0) ) +     # remove space between plot area and x axis
+# custom X axis:
+scale_x_continuous( label = CHR, breaks= Xaxis) +
+scale_y_continuous(expand = c(0, 0) ) +     # remove space between plot area and x axis
   
   
 #Custom the theme:
@@ -215,6 +237,7 @@ dev.off()
 
 #6 
 
+
 p_val2 = c()
 beta2 = c()
 for (i in  1:ncol(data_for_pca)) {
@@ -223,26 +246,28 @@ for (i in  1:ncol(data_for_pca)) {
   p_val2 = c(p_val2,summary(model_vp2)$coefficients[2,4])
 }
 
-
+#create a dataframe with all data for the manhattan plot (with PNA component)
 for_manhattan2 = data.frame("P" = p_val2,"ID" = final_genotype$ID, "Chr" = final_genotype$`#CHROM`,"Position" = final_genotype$POS, "Chromosome_position" = position_manhattan)
 
+#detect all significant SNP
 sig_data2 = for_manhattan2[for_manhattan2$P < 0.05/length(p_val2),]
 
+#create the manhattan plot
 Manhattan2 <- ggplot(for_manhattan2, aes(x=Chromosome_position, y=-log10(P)))+ ggtitle("Manhattan plot with covariates")  +
   
-  # Show all points
-  geom_point( aes(color=as.factor(Chr)), alpha=0.8, size=1.3) +
-  scale_color_manual(values = rep(c("grey", "skyblue"), 22 )) + 
-  geom_hline(yintercept = -log10(0.05/length(p_val2))) +
+# Show all points
+geom_point( aes(color=as.factor(Chr)), alpha=0.8, size=1.3) +
+scale_color_manual(values = rep(c("grey", "skyblue"), 22 )) + 
+geom_hline(yintercept = -log10(0.05/length(p_val2))) +
   
-  # custom X axis:
-  scale_x_continuous( label = CHR, breaks= Xaxis) +
-  scale_y_continuous(expand = c(0, 0) ) +     # remove space between plot area and x axis
+# custom X axis:
+scale_x_continuous( label = CHR, breaks= Xaxis) +
+scale_y_continuous(expand = c(0, 0) ) +     # remove space between plot area and x axis
   
   
-  #Custom the theme:
-  theme_bw() +
-  theme( 
+#Custom the theme:
+theme_bw() +
+theme( 
     legend.position="none",
     panel.border = element_blank(),
     panel.grid.major.x = element_blank(),
@@ -258,18 +283,15 @@ dev.off()
 
 #8
 
+#compute point for the QQ-plot
 qqpoints_exp = ppoints(length(p_val2))
 qqpoints_exp = sort(-log10(qqpoints_exp))
-
 qqpoints_obs = sort(-log10(p_val2))
-
 qqpoints_all = data.frame("Exp" = qqpoints_exp, "Obs" = qqpoints_obs)
 
-
+#create the QQ-plot
 png(filename = "Q-Q plot of GWAS p-values.png")
 qqplot <- ggplot(qqpoints_all, aes(x=Exp,y=Obs)) + geom_point() + geom_abline(colour = "red") + ggtitle("Q-Q plot of GWAS p-values (-log10(p))")
-
 qqplot
-
 dev.off()
 

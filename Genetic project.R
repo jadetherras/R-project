@@ -314,11 +314,12 @@ qqpoints_obs = sort(-log10(p_val2))
 qqpoints_all = data.frame("Exp" = qqpoints_exp, "Obs" = qqpoints_obs)
 
 #create the QQ-plot
-png(filename = "Q-Q plot of GWAS p-values.png")
-qqplot <- ggplot(qqpoints_all, aes(x=Exp,y=Obs)) + geom_point() + geom_abline(colour = "red") + ggtitle("Q-Q plot of GWAS p-values (-log10(p))")
+png(filename = "Q-Q plot of GWAS p-values with covariates.png")
+qqplot <- ggplot(qqpoints_all, aes(x=Exp,y=Obs)) + geom_point() + geom_abline(colour = "red") + ggtitle("Q-Q plot of GWAS p-values with covariates (-log10(p))")
 qqplot
 dev.off()
 
+#in order to compare, another QQ-plot without PC1...PC10 
 #compute point for the QQ-plot
 qqpoints_exp = ppoints(length(p_val))
 qqpoints_exp = sort(-log10(qqpoints_exp))
@@ -326,8 +327,8 @@ qqpoints_obs = sort(-log10(p_val))
 qqpoints_all = data.frame("Exp" = qqpoints_exp, "Obs" = qqpoints_obs)
 
 #create the QQ-plot
-png(filename = "Q-Q plot of GWAS p-values 2.png")
-qqplot <- ggplot(qqpoints_all, aes(x=Exp,y=Obs)) + geom_point() + geom_abline(colour = "red") + ggtitle("Q-Q plot of GWAS p-values (-log10(p))")
+png(filename = "Q-Q plot of GWAS p-values without covariates.png")
+qqplot <- ggplot(qqpoints_all, aes(x=Exp,y=Obs)) + geom_point() + geom_abline(colour = "red") + ggtitle("Q-Q plot of GWAS p-values without covariates (-log10(p))")
 qqplot
 dev.off()
 

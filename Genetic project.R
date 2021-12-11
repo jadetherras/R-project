@@ -53,26 +53,48 @@ supprimed # removed SNP
 
 #3
 
+# this is another method to compute the MAF? without transforming the data. It can be useful if we wanted to keep it intact, 
+#but isn't efficient 
+
 #function that compute the number of altered for each SNP
-altered = function(x) {
-  vect = c()
-  for(i in 1:ncol(x)) {
-    if(x[i] == "1/1") {
-      vect = c(vect,2)
-    }
-    else if(x[i] == "0/1" || x[i] == "1/0") {
-      vect = c(vect,1)
-    } else {
-      vect = c(vect,0)
-    }
-  }
-  return(vect)
-}
+#altered = function(x) {
+#  vect = c()
+#  for(i in 1:ncol(x)) {
+#    if(x[i] == "1/1") {
+#      vect = c(vect,2)
+#    }
+#    else if(x[i] == "0/1" || x[i] == "1/0") {
+#     vect = c(vect,1)
+#    } else {
+#      vect = c(vect,0)
+#    }
+#  }
+#  return(vect)
+#}
+
+#compute the maf and create a dataframe (we can also trasform the data in 0,1 and 2 (number of altered) and do a sum)
+#MAF = c()
+#for(i in  1:nrow(filt_genotype)){
+# AF = sum(altered(filt_genotype[i,10:ncol(filt_genotype)]))/((ncol(filt_genotype)-9)*2)
+#  if(AF <= 0.5){
+#    MAF = c(MAF,  AF)
+#  } else {
+#    MAF = c(MAF,  1-AF)
+#  }
+#}
+
+# transform the data
+# (Homozygous ref = 0, Heterozygous = 1, Homozygous alt = 2)
+filt_genotype[filt_genotype == "0/0"] = 0
+filt_genotype[filt_genotype == "1/0"] = 1
+filt_genotype[filt_genotype == "0/1"] = 1
+filt_genotype[filt_genotype == "1/1"] = 2
+
 
 #compute the maf and create a dataframe (we can also trasform the data in 0,1 and 2 (number of altered) and do a sum)
 MAF = c()
 for(i in  1:nrow(filt_genotype)){
-  AF = sum(altered(filt_genotype[i,10:ncol(filt_genotype)]))/((ncol(filt_genotype)-9)*2)
+  AF = sum(as.numeric(filt_genotype[i,10:ncol(filt_genotype)]))/((ncol(filt_genotype)-9)*2)
   if(AF <= 0.5){
     MAF = c(MAF,  AF)
   } else {
@@ -137,12 +159,14 @@ dev.off()
 data_for_pca = t(final_genotype[, 10:ncol(final_genotype)])
 colnames(data_for_pca) = final_genotype$ID
 
+# this part is needed only if you use the first method to compute MAF
+
 # Change the string values in 3 numeric values 
 # (Homozygous ref = 0, Heterozygous = 1, Homozygous alt = 2)
-data_for_pca[data_for_pca == "0/0"] = 0
-data_for_pca[data_for_pca == "1/0"] = 1
-data_for_pca[data_for_pca == "0/1"] = 1
-data_for_pca[data_for_pca == "1/1"] = 2
+#data_for_pca[data_for_pca == "0/0"] = 0
+#data_for_pca[data_for_pca == "1/0"] = 1
+#data_for_pca[data_for_pca == "0/1"] = 1
+#data_for_pca[data_for_pca == "1/1"] = 2
 
 #The class is still string
 str(data_for_pca)
@@ -291,6 +315,18 @@ qqpoints_all = data.frame("Exp" = qqpoints_exp, "Obs" = qqpoints_obs)
 
 #create the QQ-plot
 png(filename = "Q-Q plot of GWAS p-values.png")
+qqplot <- ggplot(qqpoints_all, aes(x=Exp,y=Obs)) + geom_point() + geom_abline(colour = "red") + ggtitle("Q-Q plot of GWAS p-values (-log10(p))")
+qqplot
+dev.off()
+
+#compute point for the QQ-plot
+qqpoints_exp = ppoints(length(p_val))
+qqpoints_exp = sort(-log10(qqpoints_exp))
+qqpoints_obs = sort(-log10(p_val))
+qqpoints_all = data.frame("Exp" = qqpoints_exp, "Obs" = qqpoints_obs)
+
+#create the QQ-plot
+png(filename = "Q-Q plot of GWAS p-values 2.png")
 qqplot <- ggplot(qqpoints_all, aes(x=Exp,y=Obs)) + geom_point() + geom_abline(colour = "red") + ggtitle("Q-Q plot of GWAS p-values (-log10(p))")
 qqplot
 dev.off()

@@ -8,7 +8,7 @@ library(data.table)
 library("ggplot2")
 
 #replace by your path to the project
-setwd("/Users/Djay/Desktop/BA5/G&g/R-project")
+setwd("/Users/Djay/Desktop/BA5/G&g/R-project/P1")
 
 #PART 2
 

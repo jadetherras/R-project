@@ -56,16 +56,17 @@ Rv1map = log2(Rv1+1)
 C42Bmap = log2(C42B+1)
 RWPE1map = log2(RWPE1+1)
 
-breaksList = seq(0, 15, by = 1)
+max_list = 15
+breaksList = seq(0, max_list, by = 1)
 
 png(filename = "pheatmap RV1.png")
-pheatmap(Rv1map, labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
+pheatmap(Rv1map, color=colorRampPalette(c("white", "red"))(max_list), labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
 dev.off()
 png(filename = "pheatmap C42B.png")
-pheatmap(C42Bmap, labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks =breaksList)
+pheatmap(C42Bmap,  color=colorRampPalette(c("white", "red"))(max_list), labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks =breaksList)
 dev.off()
 png(filename = "pheatmap RWPE1.png")
-pheatmap(RWPE1map, labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
+pheatmap(RWPE1map, color=colorRampPalette(c("white", "red"))(max_list), labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
 dev.off()
 
 
@@ -76,7 +77,7 @@ dev.off()
 Vanilla_coverage = function(matrix) {
   R = diag(1/rowSums(matrix))
   #we have C = R cause it's symetric
-  M = R %*% matrix %*% R
+  M = R %% matrix %% R
   M = M * sum(matrix)/sum(M)
   return(M)
 }
@@ -96,13 +97,13 @@ RWPE140_norm_map = log2(RWPE140_norm+1)
 
 
 png(filename = "pheatmap RWP1 norm.png")
-pheatmap(RWPE1_norm_map, labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
+pheatmap(RWPE1_norm_map, color=colorRampPalette(c("white", "red"))(max_list), labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
 dev.off()
 png(filename = "pheatmap RWP1 40.png")
-pheatmap(RWPE140map, labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
+pheatmap(RWPE140map, color=colorRampPalette(c("white", "red"))(max_list), labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
 dev.off()
 png(filename = "pheatmap RWP1 40 norm.png")
-pheatmap(RWPE140_norm_map, labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
+pheatmap(RWPE140_norm_map, color=colorRampPalette(c("white", "red"))(max_list), labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
 dev.off()
 
 #3 BONUS
@@ -111,22 +112,26 @@ dev.off()
 
 #1
 
-RWPE1_N_cut = data.matrix(RWPE1_in[12380:12779,12380:12779])
-C42B_N_cut = data.matrix(C42B_in[12380:12779,12380:12779])
-Rv1_N_cut = data.matrix(Rv1_in[12380:12779,12380:12779])
+start_num <- which(colnames(RWPE1_in) == "chr12:127000000:127010000")
+stop_num <- which(rownames(RWPE1_in) == "chr12:130990000:131000000")
+
+RWPE1_N_cut = data.matrix(RWPE1_in[start_num:stop_num, start_num:stop_num])
+C42B_N_cut = data.matrix(C42B_in[start_num:stop_num, start_num:stop_num])
+Rv1_N_cut = data.matrix(Rv1_in[start_num:stop_num, start_num:stop_num])
+
 
 RWPE1_N_cut_map = log2(RWPE1_N_cut+1)
 C42B_N_cut_map = log2(C42B_N_cut+1)
 Rv1_N_cut_map = log2(Rv1_N_cut+1)
 
 png(filename = "pheatmap RWP1 norm cut.png")
-pheatmap(RWPE1_N_cut_map, labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
+pheatmap(RWPE1_N_cut_map, color=colorRampPalette(c("white", "red"))(max_list), labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
 dev.off()
 png(filename = "pheatmap C42B norm cut.png")
-pheatmap(C42B_N_cut_map, labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
+pheatmap(C42B_N_cut_map, color=colorRampPalette(c("white", "red"))(max_list), labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
 dev.off()
-png(filename = "pheatmap Rv1 norm cut .png")
-pheatmap(Rv1_N_cut_map, labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
+png(filename = "pheatmap Rv1 norm cut.png")
+pheatmap(Rv1_N_cut_map, color=colorRampPalette(c("white", "red"))(max_list), labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
 dev.off()
 
 #2
@@ -136,14 +141,16 @@ RW_RV = RWPE1_N_cut_map-Rv1_N_cut_map
 RW_CB = RWPE1_N_cut_map-C42B_N_cut_map
 RV_CB = Rv1_N_cut_map-C42B_N_cut_map
 
+
+
 png(filename = "pheatmap RW_RV.png")
-pheatmap(RW_RV, labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
+pheatmap(RW_RV, color=magma(max_list), labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
 dev.off()
 png(filename = "pheatmap RW_CB.png")
-pheatmap(RW_CB, labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
+pheatmap(RW_CB, color=magma(max_list), labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
 dev.off()
 png(filename = "pheatmap RV_CB .png")
-pheatmap(RV_CB, labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
+pheatmap(RV_CB, color=magma(max_list), labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
 dev.off()
 
 #PART 6 

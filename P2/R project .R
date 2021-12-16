@@ -77,7 +77,7 @@ dev.off()
 Vanilla_coverage = function(matrix) {
   R = diag(1/rowSums(matrix))
   #we have C = R cause it's symetric
-  M = R %% matrix %% R
+  M = R %*% matrix %*% R
   M = M * sum(matrix)/sum(M)
   return(M)
 }
@@ -156,7 +156,35 @@ dev.off()
 #PART 6 
 
 #1
+
+r = 40*10^3
+w = 2*10^6
+nb_bin = w/r
+
+Directionality_Index = function(matrix) {
+  DI = c()
+  I = ncol(matrix)
+  for (i in 1:I) {
+    A = sum(matrix[i,max(0,(i-nb_bin-1)):max(0,(i-1))])
+    B = sum(matrix[i,min(I,(i+1)):min(I,(i+nb_bin+1))])
+    E = (A + B)/2
+    DI = c(DI, (B-A)*((A-E)^2/E+(B-E)^2/E)/abs(B-A))
+  }
+  return(data.frame("Bins" = c(1:I), "DI" = DI))
+}
+
 #2
+
+DI_Rv1 = Directionality_Index(Rv140_in)
+DI_C42B = Directionality_Index(C42B_in)
+DI_RWPE1 = Directionality_Index(RWPE140_in)
+
 #3
+
+png(filename = "DI_Rv1.png")
+#geom_rect(data = DI_Rv1,mapping = aes(xmin = 0,xmax = nrow(DI_Rv1),ymin = min(DI), ymax = max(DI)))
+p <- ggplot(data = DI_Rv1, aes(x = Bins, y = DI)) + geom_path()
+p
+dev.off()
 
 #PART 7 BONUS

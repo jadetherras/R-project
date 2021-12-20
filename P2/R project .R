@@ -137,10 +137,11 @@ dev.off()
 #2
 
 #3
-#RW_RV = RWPE1_N_cut_map-Rv1_N_cut_map
-#RW_CB = RWPE1_N_cut_map-C42B_N_cut_map
-#RV_CB = Rv1_N_cut_map-C42B_N_cut_map
 
+#signe ? 
+#RW_RV = sign(RWPE1_N_cut-Rv1_N_cut)*log2(abs(RWPE1_N_cut-Rv1_N_cut) +1)
+#RW_CB = sign(RWPE1_N_cut-C42B_N_cut)*log2(abs(RWPE1_N_cut-C42B_N_cut)+1)
+#RV_CB = sign(Rv1_N_cut-C42B_N_cut)*log2(abs(Rv1_N_cut-C42B_N_cut)+1)
 RW_RV = log2(abs(RWPE1_N_cut-Rv1_N_cut) +1)
 RW_CB = log2(abs(RWPE1_N_cut-C42B_N_cut)+1)
 RV_CB = log2(abs(Rv1_N_cut-C42B_N_cut)+1)
@@ -177,15 +178,37 @@ Directionality_Index = function(matrix) {
 
 #2
 
-DI_Rv1 = Directionality_Index(Rv140_in)
-DI_C42B = Directionality_Index(C42B_in)
-DI_RWPE1 = Directionality_Index(RWPE140_in)
+start_num <- which(colnames(Rv140_in) == "chr12:127000000:127040000")
+stop_num <- which(rownames(Rv140_in) == "chr12:130960000:131000000")
+
+Rv140_cut = data.matrix(Rv140_in[start_num:stop_num, start_num:stop_num])
+C42B40_cut = data.matrix(C42B40_in[start_num:stop_num, start_num:stop_num])
+RWPE140_cut = data.matrix(RWPE140_in[start_num:stop_num, start_num:stop_num])
+
+DI_Rv1 = Directionality_Index(Rv140_cut)
+DI_C42B = Directionality_Index(C42B40_cut)
+DI_RWPE1 = Directionality_Index(RWPE140_cut)
 
 #3
+l =1
+
+DI_plot_Rv1 = data.frame(xm = (DI_Rv1$Bins-1)*l, xM = (DI_Rv1$Bins)*l, ym = 0, yM = DI_Rv1$DI)
+DI_plot_C42B = data.frame(xm = (DI_C42B$Bins-1)*l, xM = (DI_C42B$Bins)*l, ym = 0, yM = DI_C42B$DI)
+DI_plot_RWPE1 = data.frame(xm = (DI_RWPE1$Bins-1)*l, xM = (DI_RWPE1$Bins)*l, ym = 0, yM = DI_RWPE1$DI)
+
 
 png(filename = "DI_Rv1.png")
-#geom_rect(data = DI_Rv1,mapping = aes(xmin = 0,xmax = nrow(DI_Rv1),ymin = min(DI), ymax = max(DI)))
-p <- ggplot(data = DI_Rv1, aes(x = Bins, y = DI)) + geom_path()
+p <- ggplot() + geom_rect(data=DI_plot_Rv1, mapping=aes(xmin = xm, xmax=xM, ymin=ym, ymax=yM, fill = sign(yM))) + ggtitle("DI for 22Rv1")
+p
+dev.off()
+
+png(filename = "DI_C42B.png")
+p <- ggplot() + geom_rect(data=DI_plot_C42B, mapping=aes(xmin = xm, xmax=xM, ymin=ym, ymax=yM,fill = sign(yM)))+ ggtitle("DI for C42B")
+p
+dev.off()
+
+png(filename = "DI_RWPE1.png")
+p <- ggplot() + geom_rect(data=DI_plot_RWPE1, mapping=aes(xmin = xm, xmax=xM, ymin=ym, ymax=yM,fill = sign(yM)))+ ggtitle("DI for RWPE1")
 p
 dev.off()
 

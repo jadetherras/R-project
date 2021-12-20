@@ -27,10 +27,12 @@ Rv1_in <- fread("data/HiC/22Rv1_chr12_10kb_hic_matrix.txt", sep = "\t", header=T
 rownames(Rv1_in) = Rv1_in$V1
 Rv1_in = data.matrix(Rv1_in[,2:ncol(Rv1_in)])
 Rv1 = Rv1_in[1:500,1:500]
+
 C42B_in <- fread("data/HiC/C42B_chr12_10kb_hic_matrix.txt", sep = "\t", header=T, data.table = F, stringsAsFactors = F)
 rownames(C42B_in) = C42B_in$V1
 C42B_in = data.matrix(C42B_in[,2:ncol(C42B_in)])
 C42B = C42B_in[1:500,1:500]
+
 RWPE1_in <- fread("data/HiC/RWPE1_chr12_10kb_hic_matrix.txt", sep = "\t", header=T, data.table = F, stringsAsFactors = F)
 rownames(RWPE1_in) = RWPE1_in$V1
 RWPE1_in = data.matrix(RWPE1_in[,2:ncol(RWPE1_in)])
@@ -41,10 +43,12 @@ Rv140_in <- fread("data/HiC/22Rv1_chr12_40kb_hic_matrix.txt", sep = "\t", header
 rownames(Rv140_in) = Rv140_in$V1
 Rv140_in = data.matrix(Rv140_in[,2:ncol(Rv140_in)])
 Rv140 = Rv140_in[1:500,1:500]
+
 C42B40_in <- fread("data/HiC/C42B_chr12_40kb_hic_matrix.txt", sep = "\t", header=T, data.table = F, stringsAsFactors = F)
 rownames(C42B40_in) = C42B40_in$V1
 C42B40_in = data.matrix(C42B40_in[,2:ncol(C42B40_in)])
 C42B40 = C42B40_in[1:500,1:500]
+
 RWPE140_in <- fread("data/HiC/RWPE1_chr12_40kb_hic_matrix.txt", sep = "\t", header=T, data.table = F, stringsAsFactors = F)
 rownames(RWPE140_in) = RWPE140_in$V1
 RWPE140_in = data.matrix(RWPE140_in[,2:ncol(RWPE140_in)])
@@ -181,15 +185,12 @@ Directionality_Index = function(matrix) {
 start_num <- which(colnames(Rv140_in) == "chr12:127000000:127040000")
 stop_num <- which(rownames(Rv140_in) == "chr12:130960000:131000000")
 
-Rv140_cut = data.matrix(Rv140_in[start_num:stop_num, start_num:stop_num])
-C42B40_cut = data.matrix(C42B40_in[start_num:stop_num, start_num:stop_num])
-RWPE140_cut = data.matrix(RWPE140_in[start_num:stop_num, start_num:stop_num])
-
-DI_Rv1 = Directionality_Index(Rv140_cut)
-DI_C42B = Directionality_Index(C42B40_cut)
-DI_RWPE1 = Directionality_Index(RWPE140_cut)
+DI_Rv1 = Directionality_Index(data.matrix(Rv140_in[start_num:stop_num, start_num:stop_num]))
+DI_C42B = Directionality_Index(data.matrix(C42B40_in[start_num:stop_num, start_num:stop_num]))
+DI_RWPE1 = Directionality_Index(data.matrix(RWPE140_in[start_num:stop_num, start_num:stop_num]))
 
 #3
+
 l =1
 
 DI_plot_Rv1 = data.frame(xm = (DI_Rv1$Bins-1)*l, xM = (DI_Rv1$Bins)*l, ym = 0, yM = DI_Rv1$DI)
@@ -216,18 +217,28 @@ dev.off()
 
 #2
 
-Rv1_H3K9me3_chr12 <- fread("data/bonus_chipseq/22Rv1_H3K9me3_chr12.bedGraph", sep = "\t", header=T, data.table = F, stringsAsFactors = F)
-Rv1_H3K9me3_chr12 <- fread("data/bonus_chipseq/22Rv1_H3K9me3_chr12.bedGraph", sep = "\t", header=T, data.table = F, stringsAsFactors = F)
-Rv1_H3K9me3_chr12 <- fread("data/bonus_chipseq/22Rv1_H3K9me3_chr12.bedGraph", sep = "\t", header=T, data.table = F, stringsAsFactors = F)
-Rv1_H3K9me3_chr12 <- fread("data/bonus_chipseq/22Rv1_H3K9me3_chr12.bedGraph", sep = "\t", header=T, data.table = F, stringsAsFactors = F)
-Rv1_H3K9me3_chr12 <- fread("data/bonus_chipseq/22Rv1_H3K9me3_chr12.bedGraph", sep = "\t", header=T, data.table = F, stringsAsFactors = F)
-Rv1_H3K9me3_chr12 <- fread("data/bonus_chipseq/22Rv1_H3K9me3_chr12.bedGraph", sep = "\t", header=T, data.table = F, stringsAsFactors = F)
-Rv1_H3K9me3_chr12 <- fread("data/bonus_chipseq/22Rv1_H3K9me3_chr12.bedGraph", sep = "\t", header=T, data.table = F, stringsAsFactors = F)
-Rv1_H3K9me3_chr12 <- fread("data/bonus_chipseq/22Rv1_H3K9me3_chr12.bedGraph", sep = "\t", header=T, data.table = F, stringsAsFactors = F)
-Rv1_H3K9me3_chr12 <- fread("data/bonus_chipseq/22Rv1_H3K9me3_chr12.bedGraph", sep = "\t", header=T, data.table = F, stringsAsFactors = F)
+start_stop = function(u) {
+  start_num <- which(u$V2 >= 127000000)[1]
+  stop_num <- which(u$V3 > 131000000)[1] -1
+  return(u[start_num:stop_num,])
+}
+
+Rv1_H3K9me3_chr12 <- start_stop(fread("data/bonus_chipseq/22Rv1_H3K9me3_chr12.bedGraph", sep = "\t", data.table = F, stringsAsFactors = F))
+Rv1_H3K27me3_chr12 <- start_stop(fread("data/bonus_chipseq/22Rv1_H3K27me3_chr12.bedGraph", sep = "\t", data.table = F, stringsAsFactors = F))
+Rv1_H3K36me3_chr12 <- start_stop(fread("data/bonus_chipseq/22Rv1_H3K36me3_chr12.bedGraph", sep = "\t", data.table = F, stringsAsFactors = F))
+
+C42B_H3K9me3_chr12 <- start_stop(fread("data/bonus_chipseq/C42B_H3K9me3_chr12.bedGraph", sep = "\t", data.table = F, stringsAsFactors = F))
+C42B_H3K27me3_chr12 <- start_stop(fread("data/bonus_chipseq/C42B_H3K27me3_chr12.bedGraph", sep = "\t", data.table = F, stringsAsFactors = F))
+C42B_H3K36me3_chr12 <- start_stop(fread("data/bonus_chipseq/C42B_H3K36me3_chr12.bedGraph", sep = "\t", data.table = F, stringsAsFactors = F))
+
+RWPE1_H3K9me3_chr12 <- start_stop(fread("data/bonus_chipseq/RWPE1_H3K9me3_chr12.bedGraph", sep = "\t", data.table = F, stringsAsFactors = F))
+RWPE1_H3K27me3_chr12 <- start_stop(fread("data/bonus_chipseq/RWPE1_H3K27me3_chr12.bedGraph", sep = "\t", data.table = F, stringsAsFactors = F))
+RWPE1_H3K36me3_chr12 <- start_stop(fread("data/bonus_chipseq/RWPE1_H3K36me3_chr12.bedGraph", sep = "\t", data.table = F, stringsAsFactors = F))
 
 
 #3
+
+
 
 #4
 

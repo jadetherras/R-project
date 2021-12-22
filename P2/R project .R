@@ -204,12 +204,12 @@ p
 dev.off()
 
 png(filename = "DI_C42B_all.png")
-p <- ggplot() + geom_rect(data=DI_plot_C42B_all, mapping=aes(xmin = xm, xmax=xM, ymin=ym, ymax=yM,fill = sign(yM)))+ ggtitle("DI for C42B with all the matrix")
+p <- ggplot() + geom_rect(data=DI_plot_C42B_all, mapping=aes(xmin = xm, xmax=xM, ymin=ym, ymax=yM,fill =  sign(yM)))+ ggtitle("DI for C42B with all the matrix")
 p
 dev.off()
 
 png(filename = "DI_RWPE1_all.png")
-p <- ggplot() + geom_rect(data=DI_plot_RWPE1_all, mapping=aes(xmin = xm, xmax=xM, ymin=ym, ymax=yM,fill = sign(yM)))+ ggtitle("DI for RWPE1 with all the matrix")
+p <- ggplot() + geom_rect(data=DI_plot_RWPE1_all, mapping=aes(xmin = xm, xmax=xM, ymin=ym, ymax=yM,fill =  sign(yM)))+ ggtitle("DI for RWPE1 with all the matrix")
 p
 dev.off()
 
@@ -262,6 +262,7 @@ triangle = function(M) {
   return(data.frame('x'=x,'y'=y, 'g'=g))
 }
 
+# with only selected data
 
 png(filename = "triangle_and_tract_22RV1.png")
 p1 <- ggplot(DI_Rv1, aes(x = Bins, y = sign(DI))) + geom_point() + ggtitle("tract for 22Rv1")
@@ -281,6 +282,25 @@ p2 <- ggplot() + geom_polygon(data = triangle(DI_RWPE1), mapping=aes(x=x, y=y, g
 grid.arrange(p1,p2, nrow=2)
 dev.off()
 
+#with all data
+
+png(filename = "triangle_and_tract_22RV1_all.png")
+p1 <- ggplot(DI_Rv1_all, aes(x = Bins, y = sign(DI))) + geom_point() + ggtitle("tract for 22Rv1")
+p2 <- ggplot() + geom_polygon(data = triangle(DI_Rv1_all), mapping=aes(x=x, y=y, group=g)) + ggtitle("triangle for 22Rv1")
+grid.arrange(p1,p2, nrow=2)
+dev.off()
+
+png(filename = "triangle_and_tract_C42B_all.png")
+p1 <- ggplot(DI_C42B_all, aes(x = Bins, y = sign(DI))) + geom_point() + ggtitle("tract for C42B")
+p2 <- ggplot() + geom_polygon(data = triangle(DI_C42B_all), mapping=aes(x=x, y=y, group=g)) + ggtitle("triangle for C42B")
+grid.arrange(p1,p2, nrow=2)
+dev.off()
+
+png(filename = "triangle_and_tract_RWPE1_all.png")
+p1 <- ggplot(DI_RWPE1_all, aes(x = Bins, y = sign(DI))) + geom_point() + ggtitle("tract for RWPE1")
+p2 <- ggplot() + geom_polygon(data = triangle(DI_RWPE1_all), mapping=aes(x=x, y=y, group=g)) + ggtitle("triangle for RWPE1")
+grid.arrange(p1,p2, nrow=2)
+dev.off()
 
 
 #PART 7 BONUS

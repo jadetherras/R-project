@@ -188,9 +188,32 @@ start_num <- which(colnames(Rv140_in) == "chr12:127000000:127040000")
 stop_num <- which(rownames(Rv140_in) == "chr12:130960000:131000000")
 
 # with all data
-DI_Rv1_all  = Directionality_Index(Vanilla_coverage(Rv140_in))[start_num:stop_num,]
-DI_C42B_all  = Directionality_Index(Vanilla_coverage(C42B40_in))[start_num:stop_num,]
-DI_RWPE1_all  = Directionality_Index(Vanilla_coverage(RWPE140_in))[start_num:stop_num,]
+
+for_DI_Rv140 = Vanilla_coverage(Rv140_in)
+for_DI_C42B40 = Vanilla_coverage(C42B40_in)
+for_DI_RWPE140 = Vanilla_coverage(RWPE140_in)
+
+for_DI_Rv140_map = log2(for_DI_Rv140+1)
+for_DI_C42B40_map = log2(for_DI_C42B40+1)
+for_DI_RWPE140_map = log2(for_DI_RWPE140+1)
+
+max_list = 15
+breaksList = seq(0, max_list, by = 1)
+
+png(filename = "pheatmap for_DI_Rv140.png")
+pheatmap(for_DI_Rv140_map,color=colorRampPalette(c("white", "red"))(max_list),main = 'for_DI_Rv140', labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
+dev.off()
+png(filename = "pheatmap for_DI_C42B40.png")
+pheatmap(for_DI_C42B40_map,color=colorRampPalette(c("white", "red"))(max_list),main = 'for_DI_C42B40', labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
+dev.off()
+png(filename = "pheatmap for_DI_RWPE140.png")
+pheatmap(for_DI_RWPE140_map,color=colorRampPalette(c("white", "red"))(max_list),main = 'for_DI_RWPE140', labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
+dev.off()
+
+DI_Rv1_all  = Directionality_Index(for_DI_Rv140)[start_num:stop_num,]
+DI_C42B_all  = Directionality_Index(for_DI_C42B40)[start_num:stop_num,]
+DI_RWPE1_all  = Directionality_Index(for_DI_RWPE140)[start_num:stop_num,]
+
 
 l = 1
 
@@ -199,17 +222,17 @@ DI_plot_C42B_all = data.frame(xm = (DI_C42B_all$Bins-start_num)*l, xM = (DI_C42B
 DI_plot_RWPE1_all = data.frame(xm = (DI_RWPE1_all$Bins-start_num)*l, xM = (DI_RWPE1_all$Bins-start_num+1)*l, ym = 0, yM = DI_RWPE1_all$DI)
 
 png(filename = "DI_Rv1_all.png")
-p <- ggplot() + geom_rect(data=DI_plot_Rv1_all, mapping=aes(xmin = xm, xmax=xM, ymin=ym, ymax=yM, fill = sign(yM))) + ggtitle("DI for 22Rv1 with all the matrix")
+p <- ggplot() + geom_rect(data=DI_plot_Rv1_all, mapping=aes(xmin = xm, xmax=xM, ymin=ym, ymax=yM, fill = as.factor(sign(yM)))) + ggtitle("DI for 22Rv1 with all the matrix")
 p
 dev.off()
 
 png(filename = "DI_C42B_all.png")
-p <- ggplot() + geom_rect(data=DI_plot_C42B_all, mapping=aes(xmin = xm, xmax=xM, ymin=ym, ymax=yM,fill =  sign(yM)))+ ggtitle("DI for C42B with all the matrix")
+p <- ggplot() + geom_rect(data=DI_plot_C42B_all, mapping=aes(xmin = xm, xmax=xM, ymin=ym, ymax=yM,fill =  as.factor(sign(yM))))+ ggtitle("DI for C42B with all the matrix")
 p
 dev.off()
 
 png(filename = "DI_RWPE1_all.png")
-p <- ggplot() + geom_rect(data=DI_plot_RWPE1_all, mapping=aes(xmin = xm, xmax=xM, ymin=ym, ymax=yM,fill =  sign(yM)))+ ggtitle("DI for RWPE1 with all the matrix")
+p <- ggplot() + geom_rect(data=DI_plot_RWPE1_all, mapping=aes(xmin = xm, xmax=xM, ymin=ym, ymax=yM,fill =  as.factor(sign(yM))))+ ggtitle("DI for RWPE1 with all the matrix")
 p
 dev.off()
 
@@ -225,17 +248,17 @@ DI_plot_RWPE1 = data.frame(xm = (DI_RWPE1$Bins-1)*l, xM = (DI_RWPE1$Bins)*l, ym 
 
 
 png(filename = "DI_Rv1.png")
-p <- ggplot() + geom_rect(data=DI_plot_Rv1, mapping=aes(xmin = xm, xmax=xM, ymin=ym, ymax=yM, fill = sign(yM))) + ggtitle("DI for 22Rv1") + coord_cartesian(ylim = c(-2000, 2000))
+p <- ggplot() + geom_rect(data=DI_plot_Rv1, mapping=aes(xmin = xm, xmax=xM, ymin=ym, ymax=yM, fill = as.factor(sign(yM)))) + ggtitle("DI for 22Rv1") + coord_cartesian(ylim = c(-2000, 2000))
 p
 dev.off()
 
 png(filename = "DI_C42B.png")
-p <- ggplot() + geom_rect(data=DI_plot_C42B, mapping=aes(xmin = xm, xmax=xM, ymin=ym, ymax=yM,fill = sign(yM)))+ ggtitle("DI for C42B") + coord_cartesian(ylim = c(-2000, 2000))
+p <- ggplot() + geom_rect(data=DI_plot_C42B, mapping=aes(xmin = xm, xmax=xM, ymin=ym, ymax=yM,fill = as.factor(sign(yM))))+ ggtitle("DI for C42B") + coord_cartesian(ylim = c(-2000, 2000))
 p
 dev.off()
 
 png(filename = "DI_RWPE1.png")
-p <- ggplot() + geom_rect(data=DI_plot_RWPE1, mapping=aes(xmin = xm, xmax=xM, ymin=ym, ymax=yM,fill = sign(yM)))+ ggtitle("DI for RWPE1") + coord_cartesian(ylim = c(-2000, 2000))
+p <- ggplot() + geom_rect(data=DI_plot_RWPE1, mapping=aes(xmin = xm, xmax=xM, ymin=ym, ymax=yM,fill = as.factor(sign(yM))))+ ggtitle("DI for RWPE1") + coord_cartesian(ylim = c(-2000, 2000))
 p
 dev.off()
 
@@ -328,11 +351,9 @@ RWPE1_H3K36me3_chr12 <- start_stop(fread("data/bonus_chipseq/RWPE1_H3K36me3_chr1
 
 #3
 
-l = 10
-
 data_plot = function(frame,title){
-  plotty = data.frame(xm = (frame$V2)*l, xM = (frame$V3)*l, ym = 0, yM = log2(frame$V4+1))
-  p <- ggplot() + geom_rect(data=plotty , mapping=aes(xmin = xm, xmax=xM, ymin=ym, ymax=yM)) + xlim(127000000, 131000000) + ggtitle(title)
+  plotty = data.frame(xm = frame$V2, xM = frame$V3, ym = 0, yM = log2(frame$V4+1))
+  p <- ggplot() + geom_rect(data=plotty , mapping=aes(xmin = xm, xmax=xM, ymin=ym, ymax=yM))+ xlim(127000000, 131000000) + ggtitle(title)
   return(p)
 }
 

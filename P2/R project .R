@@ -239,19 +239,22 @@ for_DI_Rv140 = Vanilla_coverage(Rv140_in)
 for_DI_C42B40 = Vanilla_coverage(C42B40_in)
 for_DI_RWPE140 = Vanilla_coverage(RWPE140_in)
 
-for_DI_Rv140_map = log2(for_DI_Rv140+1)
-for_DI_C42B40_map = log2(for_DI_C42B40+1)
-for_DI_RWPE140_map = log2(for_DI_RWPE140+1)
+for_DI_Rv140_map = log2(for_DI_Rv140[start_num:stop_num, start_num:stop_num]+1)
+for_DI_C42B40_map = log2(for_DI_C42B40[(start_num-1):(stop_num-1), (start_num-1):(stop_num-1)]+1)
+for_DI_RWPE140_map = log2(for_DI_RWPE140[start_num:stop_num, start_num:stop_num]+1)
 
-#png(filename = "pheatmap for_DI_Rv140.png")
-#pheatmap(for_DI_Rv140_map,color=colorRampPalette(c("white", "red"))(max_list),main = 'for_DI_Rv140', labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
-#dev.off()
-#png(filename = "pheatmap for_DI_C42B40.png")
-#pheatmap(for_DI_C42B40_map,color=colorRampPalette(c("white", "red"))(max_list),main = 'for_DI_C42B40', labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
-#dev.off()
-#png(filename = "pheatmap for_DI_RWPE140.png")
-#pheatmap(for_DI_RWPE140_map,color=colorRampPalette(c("white", "red"))(max_list),main = 'for_DI_RWPE140', labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
-#dev.off()
+max_list_DI = 12
+breaksList_DI = seq(0, max_list_DI, by = 2)
+
+png(filename = "pheatmap for_DI_Rv140.png")
+pheatmap(for_DI_Rv140_map,color=colorRampPalette(c("white", "red"))(max_list_DI/2),main = 'for_DI_Rv140', labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList_DI)
+dev.off()
+png(filename = "pheatmap for_DI_C42B40.png")
+pheatmap(for_DI_C42B40_map,color=colorRampPalette(c("white", "red"))(max_list_DI/2),main = 'for_DI_C42B40', labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList_DI)
+dev.off()
+png(filename = "pheatmap for_DI_RWPE140.png")
+pheatmap(for_DI_RWPE140_map,color=colorRampPalette(c("white", "red"))(max_list_DI/2),main = 'for_DI_RWPE140', labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList_DI)
+dev.off()
 
 DI_Rv1_all  = Directionality_Index(for_DI_Rv140)[start_num:stop_num,]
 DI_C42B_all  = Directionality_Index(for_DI_C42B40)[(start_num-1):(stop_num-1),]
@@ -279,9 +282,30 @@ dev.off()
 
 #only with the cut data
 
-DI_Rv1 = Directionality_Index(Vanilla_coverage(Rv140_in[start_num:stop_num, start_num:stop_num]))
-DI_C42B = Directionality_Index(Vanilla_coverage(C42B40_in[(start_num-1):(stop_num-1), (start_num-1):(stop_num-1)]))
-DI_RWPE1 = Directionality_Index(Vanilla_coverage(RWPE140_in[start_num:stop_num, start_num:stop_num]))
+for_DI_Rv140_cut = Vanilla_coverage(Rv140_in[start_num:stop_num, start_num:stop_num])
+for_DI_C42B40_cut = Vanilla_coverage(C42B40_in[(start_num-1):(stop_num-1), (start_num-1):(stop_num-1)])
+for_DI_RWPE140_cut = Vanilla_coverage(RWPE140_in[start_num:stop_num, start_num:stop_num])
+
+for_DI_Rv140_cut_map = log2(for_DI_Rv140_cut+1)
+for_DI_C42B40_cut_map = log2(for_DI_C42B40_cut+1)
+for_DI_RWPE140_cut_map  = log2(for_DI_RWPE140_cut+1)
+
+max_list_DI = 12
+breaksList_DI = seq(0, max_list_DI, by = 2)
+
+png(filename = "pheatmap for_DI_Rv140 cut.png")
+pheatmap(for_DI_Rv140_cut_map,color=colorRampPalette(c("white", "red"))(max_list_DI),main = 'for_DI_Rv140', labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList_DI)
+dev.off()
+png(filename = "pheatmap for_DI_C42B40 cut.png")
+pheatmap(for_DI_C42B40_cut_map,color=colorRampPalette(c("white", "red"))(max_list_DI),main = 'for_DI_C42B40', labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList_DI)
+dev.off()
+png(filename = "pheatmap for_DI_RWPE140 cut.png")
+pheatmap(for_DI_RWPE140_cut_map,color=colorRampPalette(c("white", "red"))(max_list_DI),main = 'for_DI_RWPE140', labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList_DI)
+dev.off()
+
+DI_Rv1 = Directionality_Index(for_DI_Rv140_cut)
+DI_C42B = Directionality_Index(for_DI_C42B40_cut)
+DI_RWPE1 = Directionality_Index(for_DI_RWPE140_cut)
 
 DI_plot_Rv1 = data.frame(xm = DI_Rv1$Bins, xM = DI_Rv1$Bins+1, ym = 0, yM = DI_Rv1$DI)
 DI_plot_C42B = data.frame(xm = DI_C42B$Bins, xM = DI_C42B$Bins+1, ym = 0, yM = DI_C42B$DI)
@@ -393,6 +417,7 @@ RWPE1_H3K36me3_chr12 <- start_stop(fread("data/bonus_chipseq/RWPE1_H3K36me3_chr1
 
 
 #3
+
 
 data_plot = function(frame,title){
   plotty = data.frame(xm = frame$V2, xM = frame$V3, ym = 0, yM = log2(frame$V4+1))

@@ -1,4 +1,5 @@
 #PART 1
+#Background of the project
 
 #PART 2
 
@@ -9,6 +10,7 @@ install.packages("pheatmap")
 install.packages("viridis")
 install.packages("gridExtra")
 
+#requiered library
 library("gridExtra")
 library(data.table)
 library(pheatmap)
@@ -20,11 +22,9 @@ setwd("/Users/Djay/Desktop/BA5/G&g/R-project/P2")
 
 #PART 3
 
-# 1
-#symetric matrix, approx the same size 
-#value => contact matrix = interaction ? 
+# 1 
 
-#10kb
+#Load 10kb matrix, and cut the 500 first rows and column
 Rv1_in <- fread("data/HiC/22Rv1_chr12_10kb_hic_matrix.txt", sep = "\t", header=T, data.table = F, stringsAsFactors = F)
 rownames(Rv1_in) = Rv1_in$V1
 Rv1_in = data.matrix(Rv1_in[,2:ncol(Rv1_in)])
@@ -40,16 +40,16 @@ rownames(RWPE1_in) = RWPE1_in$V1
 RWPE1_in = data.matrix(RWPE1_in[,2:ncol(RWPE1_in)])
 RWPE1 = RWPE1_in[1:500,1:500]
 
-#40kb
+#same for the 40kb matrix
 Rv140_in <- fread("data/HiC/22Rv1_chr12_40kb_hic_matrix.txt", sep = "\t", header=T, data.table = F, stringsAsFactors = F)
 rownames(Rv140_in) = Rv140_in$V1
 Rv140_in = data.matrix(Rv140_in[,2:ncol(Rv140_in)])
-Rv140 = Rv140_in[1:500,1:500]
+#Rv140 = Rv140_in[1:500,1:500]
 
 C42B40_in <- fread("data/HiC/C42B_chr12_40kb_hic_matrix.txt", sep = "\t", header=T, data.table = F, stringsAsFactors = F)
 rownames(C42B40_in) = C42B40_in$V1
 C42B40_in = data.matrix(C42B40_in[,2:ncol(C42B40_in)])
-C42B40 = C42B40_in[1:500,1:500]
+#C42B40 = C42B40_in[1:500,1:500]
 
 RWPE140_in <- fread("data/HiC/RWPE1_chr12_40kb_hic_matrix.txt", sep = "\t", header=T, data.table = F, stringsAsFactors = F)
 rownames(RWPE140_in) = RWPE140_in$V1
@@ -58,9 +58,17 @@ RWPE140 = RWPE140_in[1:500,1:500]
 
 #2
 
+#log transform the data
 Rv1map = log2(Rv1+1)
 C42Bmap = log2(C42B+1)
 RWPE1map = log2(RWPE1+1)
+
+#visualise using pheatmap
+
+max(Rv1_in) #959
+max(C42B_in) #416
+max(RWPE1_in) #503
+#the max log2(val+1) = log2(960) < 10
 
 max_list = 15
 breaksList = seq(0, max_list, by = 1)
@@ -80,31 +88,32 @@ dev.off()
 
 #1
 
+#implement vanilla_coverage
 Vanilla_coverage = function(matrix) {
   R = diag(1/rowSums(matrix))
   #we have C = R cause it's symetric
   M = R %*% matrix %*% R
-  M = M * sum(matrix)/sum(M)
+  if (sum(M) != 0) {
+    M = M * sum(matrix)/sum(M)
+  }
   return(M)
 }
 
-Rv1_norm = Vanilla_coverage(Rv1)
-C42B_norm = Vanilla_coverage(C42B)
+#we normalise all data on the 500 first rows and columns
+#Rv1_norm = Vanilla_coverage(Rv1)
+#C42B_norm = Vanilla_coverage(C42B)
 RWPE1_norm = Vanilla_coverage(RWPE1)
-Rv140_norm = Vanilla_coverage(Rv140)
-C42B40_norm = Vanilla_coverage(C42B40)
+#Rv140_norm = Vanilla_coverage(Rv140)
+#C42B40_norm = Vanilla_coverage(C42B40)
 RWPE140_norm = Vanilla_coverage(RWPE140)
 
 #2
 
+#log transform the data
 RWPE140map = log2(RWPE140+1)
-RWPE1_norm_map = log2(RWPE1_norm+1)
 RWPE140_norm_map = log2(RWPE140_norm+1)
 
-
-png(filename = "pheatmap RWP1 norm.png")
-pheatmap(RWPE1_norm_map, color=colorRampPalette(c("white", "red"))(max_list),main = 'pheatmap RWPE1 10kb normalised', labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
-dev.off()
+#visualise with pheatmap
 png(filename = "pheatmap RWP1 40.png")
 pheatmap(RWPE140map, color=colorRampPalette(c("white", "red"))(max_list),main = 'pheatmap RWPE1 40kb', labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
 dev.off()
@@ -112,24 +121,42 @@ png(filename = "pheatmap RWP1 40 norm.png")
 pheatmap(RWPE140_norm_map, color=colorRampPalette(c("white", "red"))(max_list),main = 'pheatmap RWPE1 40kb normalised', labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
 dev.off()
 
+#remove non-normalised data
+rm(Rv1)
+rm(C42B)
+rm(RWPE1)
+#rm(Rv140)
+#rm(C42B40)
+rm(RWPE140)
+
 #3 BONUS
+#in report
 
 #PART 5
 
 #1
 
+#we first need to subset and normalise the data
+
+#same start and stop for RWPE1 and 22RV1
 start_num <- which(colnames(RWPE1_in) == "chr12:127000000:127010000")
 stop_num <- which(rownames(RWPE1_in) == "chr12:130990000:131000000")
 
 RWPE1_N_cut = Vanilla_coverage(data.matrix(RWPE1_in[start_num:stop_num, start_num:stop_num]))
-C42B_N_cut = Vanilla_coverage(data.matrix(C42B_in[start_num:stop_num, start_num:stop_num]))
 Rv1_N_cut = Vanilla_coverage(data.matrix(Rv1_in[start_num:stop_num, start_num:stop_num]))
 
+#normally, have to be the same for the three, but since C42B data lose a column start and stop are 1 less
+start_num <- which(colnames(C42B_in) == "chr12:127000000:127010000")
+stop_num <- which(rownames(C42B_in) == "chr12:130990000:131000000")
 
+C42B_N_cut = Vanilla_coverage(data.matrix(C42B_in[start_num:stop_num, start_num:stop_num]))
+
+#log transform the data
 RWPE1_N_cut_map = log2(RWPE1_N_cut+1)
 C42B_N_cut_map = log2(C42B_N_cut+1)
 Rv1_N_cut_map = log2(Rv1_N_cut+1)
 
+#visualize the data
 png(filename = "pheatmap C42B norm cut.png")
 pheatmap(C42B_N_cut_map, color=colorRampPalette(c("white", "red"))(max_list),main = 'pheatmap C42B 10kb normalised ', labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
 dev.off()
@@ -140,36 +167,54 @@ png(filename = "pheatmap RWP1 norm cut.png")
 pheatmap(RWPE1_N_cut_map, color=colorRampPalette(c("white", "red"))(max_list),main = 'pheatmap RWPE1 10kb normalised ', labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
 dev.off()
 
-#2
-
 #3
 
-#signe ? 
+#without sign 
+
+RW_RV = log2(abs(RWPE1_N_cut-Rv1_N_cut) +1)
+RW_CB = log2(abs(RWPE1_N_cut-C42B_N_cut)+1)
+RV_CB = log2(abs(Rv1_N_cut-C42B_N_cut)+1)
+
+max_list_spe = 5
+breaksList_spe = seq(0, max_list_spe, by = 1)
+
+png(filename = "pheatmap RW_RV without sign.png")
+pheatmap(RW_RV, color=magma(max_list_spe),main = 'RWPE1 & 22Rv1', labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList_spe)
+dev.off()
+png(filename = "pheatmap RW_CB without sign.png")
+pheatmap(RW_CB, color=magma(max_list_spe),main = 'RWPE1 & C42B', labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList_spe)
+dev.off()
+png(filename = "pheatmap RV_CB without sign.png")
+pheatmap(RV_CB, color=magma(max_list_spe),main = '22Rv1 & C42B', labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList_spe)
+dev.off()
+
+#with sign
 RW_RV = sign(RWPE1_N_cut-Rv1_N_cut)*log2(abs(RWPE1_N_cut-Rv1_N_cut) +1)
 RW_CB = sign(RWPE1_N_cut-C42B_N_cut)*log2(abs(RWPE1_N_cut-C42B_N_cut)+1)
 RV_CB = sign(Rv1_N_cut-C42B_N_cut)*log2(abs(Rv1_N_cut-C42B_N_cut)+1)
-#RW_RV = log2(abs(RWPE1_N_cut-Rv1_N_cut) +1)
-#RW_CB = log2(abs(RWPE1_N_cut-C42B_N_cut)+1)
-#RV_CB = log2(abs(Rv1_N_cut-C42B_N_cut)+1)
+
+breaksList_spe = seq(-5, max_list_spe, by = 1)
 
 png(filename = "pheatmap RW_RV.png")
-pheatmap(RW_RV, color=magma(max_list),main = 'RWPE1 & 22Rv1', labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
+pheatmap(RW_RV, color=magma(max_list_spe*2),main = 'RWPE1 & 22Rv1', labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList_spe)
 dev.off()
 png(filename = "pheatmap RW_CB.png")
-pheatmap(RW_CB, color=magma(max_list),main = 'RWPE1 & C42B', labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
+pheatmap(RW_CB, color=magma(max_list_spe*2),main = 'RWPE1 & C42B', labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList_spe)
 dev.off()
 png(filename = "pheatmap RV_CB.png")
-pheatmap(RV_CB, color=magma(max_list),main = '22Rv1 & C42B', labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
+pheatmap(RV_CB, color=magma(max_list_spe*2),main = '22Rv1 & C42B', labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList_spe)
 dev.off()
 
 #PART 6 
 
 #1
 
-r = 40*10^3
-w = 2*10^6
-nb_bin = w/r
 
+r = 40*10^3 #resolution
+w = 2*10^6 #window size
+nb_bin = w/r #respective number of bins
+
+#implement the directionality index method
 Directionality_Index = function(matrix) {
   DI = c()
   I = ncol(matrix)
@@ -184,6 +229,7 @@ Directionality_Index = function(matrix) {
 
 #2 and 3
 
+#same as before, for C42B one column is loss
 start_num <- which(colnames(Rv140_in) == "chr12:127000000:127040000")
 stop_num <- which(rownames(Rv140_in) == "chr12:130960000:131000000")
 
@@ -197,68 +243,63 @@ for_DI_Rv140_map = log2(for_DI_Rv140+1)
 for_DI_C42B40_map = log2(for_DI_C42B40+1)
 for_DI_RWPE140_map = log2(for_DI_RWPE140+1)
 
-max_list = 15
-breaksList = seq(0, max_list, by = 1)
-
-png(filename = "pheatmap for_DI_Rv140.png")
-pheatmap(for_DI_Rv140_map,color=colorRampPalette(c("white", "red"))(max_list),main = 'for_DI_Rv140', labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
-dev.off()
-png(filename = "pheatmap for_DI_C42B40.png")
-pheatmap(for_DI_C42B40_map,color=colorRampPalette(c("white", "red"))(max_list),main = 'for_DI_C42B40', labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
-dev.off()
-png(filename = "pheatmap for_DI_RWPE140.png")
-pheatmap(for_DI_RWPE140_map,color=colorRampPalette(c("white", "red"))(max_list),main = 'for_DI_RWPE140', labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
-dev.off()
+#png(filename = "pheatmap for_DI_Rv140.png")
+#pheatmap(for_DI_Rv140_map,color=colorRampPalette(c("white", "red"))(max_list),main = 'for_DI_Rv140', labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
+#dev.off()
+#png(filename = "pheatmap for_DI_C42B40.png")
+#pheatmap(for_DI_C42B40_map,color=colorRampPalette(c("white", "red"))(max_list),main = 'for_DI_C42B40', labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
+#dev.off()
+#png(filename = "pheatmap for_DI_RWPE140.png")
+#pheatmap(for_DI_RWPE140_map,color=colorRampPalette(c("white", "red"))(max_list),main = 'for_DI_RWPE140', labels_row = '', labels_col = '', cluster_cols = F, cluster_rows  = F,breaks = breaksList)
+#dev.off()
 
 DI_Rv1_all  = Directionality_Index(for_DI_Rv140)[start_num:stop_num,]
-DI_C42B_all  = Directionality_Index(for_DI_C42B40)[start_num:stop_num,]
+DI_C42B_all  = Directionality_Index(for_DI_C42B40)[(start_num-1):(stop_num-1),]
 DI_RWPE1_all  = Directionality_Index(for_DI_RWPE140)[start_num:stop_num,]
 
 
-l = 1
-
-DI_plot_Rv1_all = data.frame(xm = (DI_Rv1_all$Bins-start_num)*l, xM = (DI_Rv1_all$Bins-start_num+1)*l, ym = 0, yM = DI_Rv1_all$DI)
-DI_plot_C42B_all = data.frame(xm = (DI_C42B_all$Bins-start_num)*l, xM = (DI_C42B_all$Bins-start_num+1)*l, ym = 0, yM = DI_C42B_all$DI)
-DI_plot_RWPE1_all = data.frame(xm = (DI_RWPE1_all$Bins-start_num)*l, xM = (DI_RWPE1_all$Bins-start_num+1)*l, ym = 0, yM = DI_RWPE1_all$DI)
+DI_plot_Rv1_all = data.frame(xm = (DI_Rv1_all$Bins-start_num), xM = (DI_Rv1_all$Bins-start_num+1), ym = 0, yM = DI_Rv1_all$DI)
+DI_plot_C42B_all = data.frame(xm = (DI_C42B_all$Bins-start_num+1), xM = (DI_C42B_all$Bins-start_num+2), ym = 0, yM = DI_C42B_all$DI)
+DI_plot_RWPE1_all = data.frame(xm = (DI_RWPE1_all$Bins-start_num), xM = (DI_RWPE1_all$Bins-start_num+1), ym = 0, yM = DI_RWPE1_all$DI)
 
 png(filename = "DI_Rv1_all.png")
-p <- ggplot() + geom_rect(data=DI_plot_Rv1_all, mapping=aes(xmin = xm, xmax=xM, ymin=ym, ymax=yM, fill = as.factor(sign(yM)))) + ggtitle("DI for 22Rv1 with all the matrix")
+p <- ggplot() + geom_rect(data=DI_plot_Rv1_all, mapping=aes(xmin = xm, xmax=xM, ymin=ym, ymax=yM, fill = as.factor(sign(yM)))) + ggtitle("DI for 22Rv1 with all the matrix") + xlab("bins") + ylab("DI")
 p
 dev.off()
 
 png(filename = "DI_C42B_all.png")
-p <- ggplot() + geom_rect(data=DI_plot_C42B_all, mapping=aes(xmin = xm, xmax=xM, ymin=ym, ymax=yM,fill =  as.factor(sign(yM))))+ ggtitle("DI for C42B with all the matrix")
+p <- ggplot() + geom_rect(data=DI_plot_C42B_all, mapping=aes(xmin = xm, xmax=xM, ymin=ym, ymax=yM,fill =  as.factor(sign(yM))))+ ggtitle("DI for C42B with all the matrix")+ xlab("bins") + ylab("DI")
 p
 dev.off()
 
 png(filename = "DI_RWPE1_all.png")
-p <- ggplot() + geom_rect(data=DI_plot_RWPE1_all, mapping=aes(xmin = xm, xmax=xM, ymin=ym, ymax=yM,fill =  as.factor(sign(yM))))+ ggtitle("DI for RWPE1 with all the matrix")
+p <- ggplot() + geom_rect(data=DI_plot_RWPE1_all, mapping=aes(xmin = xm, xmax=xM, ymin=ym, ymax=yM,fill =  as.factor(sign(yM))))+ ggtitle("DI for RWPE1 with all the matrix")+ xlab("bins") + ylab("DI")
 p
 dev.off()
 
 #only with the cut data
 
 DI_Rv1 = Directionality_Index(Vanilla_coverage(Rv140_in[start_num:stop_num, start_num:stop_num]))
-DI_C42B = Directionality_Index(Vanilla_coverage(C42B40_in[start_num:stop_num, start_num:stop_num]))
+DI_C42B = Directionality_Index(Vanilla_coverage(C42B40_in[(start_num-1):(stop_num-1), (start_num-1):(stop_num-1)]))
 DI_RWPE1 = Directionality_Index(Vanilla_coverage(RWPE140_in[start_num:stop_num, start_num:stop_num]))
 
-DI_plot_Rv1 = data.frame(xm = (DI_Rv1$Bins-start_num)*l, xM = (DI_Rv1$Bins-start_num+1)*l, ym = 0, yM = DI_Rv1$DI)
-DI_plot_C42B = data.frame(xm = (DI_C42B$Bins-1)*l, xM = (DI_C42B$Bins)*l, ym = 0, yM = DI_C42B$DI)
-DI_plot_RWPE1 = data.frame(xm = (DI_RWPE1$Bins-1)*l, xM = (DI_RWPE1$Bins)*l, ym = 0, yM = DI_RWPE1$DI)
+DI_plot_Rv1 = data.frame(xm = DI_Rv1$Bins, xM = DI_Rv1$Bins+1, ym = 0, yM = DI_Rv1$DI)
+DI_plot_C42B = data.frame(xm = DI_C42B$Bins, xM = DI_C42B$Bins+1, ym = 0, yM = DI_C42B$DI)
+DI_plot_RWPE1 = data.frame(xm = DI_RWPE1$Bins, xM = DI_RWPE1$Bins+1, ym = 0, yM = DI_RWPE1$DI)
 
 
 png(filename = "DI_Rv1.png")
-p <- ggplot() + geom_rect(data=DI_plot_Rv1, mapping=aes(xmin = xm, xmax=xM, ymin=ym, ymax=yM, fill = as.factor(sign(yM)))) + ggtitle("DI for 22Rv1") + coord_cartesian(ylim = c(-2000, 2000))
+p <- ggplot() + geom_rect(data=DI_plot_Rv1, mapping=aes(xmin = xm, xmax=xM, ymin=ym, ymax=yM, fill = as.factor(sign(yM)))) + ggtitle("DI for 22Rv1") + coord_cartesian(ylim = c(-2000, 2000))+ xlab("bins") + ylab("DI")
 p
 dev.off()
 
 png(filename = "DI_C42B.png")
-p <- ggplot() + geom_rect(data=DI_plot_C42B, mapping=aes(xmin = xm, xmax=xM, ymin=ym, ymax=yM,fill = as.factor(sign(yM))))+ ggtitle("DI for C42B") + coord_cartesian(ylim = c(-2000, 2000))
+p <- ggplot() + geom_rect(data=DI_plot_C42B, mapping=aes(xmin = xm, xmax=xM, ymin=ym, ymax=yM,fill = as.factor(sign(yM))))+ ggtitle("DI for C42B") + coord_cartesian(ylim = c(-2000, 2000))+ xlab("bins") + ylab("DI")
 p
 dev.off()
 
 png(filename = "DI_RWPE1.png")
-p <- ggplot() + geom_rect(data=DI_plot_RWPE1, mapping=aes(xmin = xm, xmax=xM, ymin=ym, ymax=yM,fill = as.factor(sign(yM))))+ ggtitle("DI for RWPE1") + coord_cartesian(ylim = c(-2000, 2000))
+p <- ggplot() + geom_rect(data=DI_plot_RWPE1, mapping=aes(xmin = xm, xmax=xM, ymin=ym, ymax=yM,fill = as.factor(sign(yM))))+ ggtitle("DI for RWPE1") + coord_cartesian(ylim = c(-2000, 2000))+ xlab("bins") + ylab("DI")
 p
 dev.off()
 
@@ -330,12 +371,14 @@ dev.off()
 
 #2
 
+#detection of start and stop position
 start_stop = function(u) {
   start_num <- which(u$V2 >= 127000000)[1]
   stop_num <- which(u$V3 > 131000000)[1] -1
   return(u[start_num:stop_num,])
 }
 
+#select the locus
 Rv1_H3K9me3_chr12 <- start_stop(fread("data/bonus_chipseq/22Rv1_H3K9me3_chr12.bedGraph", sep = "\t", data.table = F, stringsAsFactors = F))
 Rv1_H3K27me3_chr12 <- start_stop(fread("data/bonus_chipseq/22Rv1_H3K27me3_chr12.bedGraph", sep = "\t", data.table = F, stringsAsFactors = F))
 Rv1_H3K36me3_chr12 <- start_stop(fread("data/bonus_chipseq/22Rv1_H3K36me3_chr12.bedGraph", sep = "\t", data.table = F, stringsAsFactors = F))

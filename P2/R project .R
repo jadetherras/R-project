@@ -430,3 +430,5 @@ grid.arrange(p7,p8,p9, nrow = 3)
 
 dev.off()
 
+#remove the 0 data
+
